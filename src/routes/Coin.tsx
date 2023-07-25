@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Routes, Route, useLocation, useParams, Link, useMatch } from 'react-router-dom';
+import { useLocation, useParams, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import Price from './Price';
 import Chart from './Chart';
@@ -9,11 +9,12 @@ import { fetchCoinInfo, fetchCoinTickers } from '../api';
 
 function Coin() {
   const { coinId } = useParams() as unknown as RouteParams;
-
+  const [tab, setTab] = useState('price');
   const { state } = useLocation();
-  const priceMath = useMatch('/:coinId/price');
-  const chartMath = useMatch('/:coinId/chart');
 
+  const handleTab = (tabName: string) => {
+    setTab(tabName);
+  };
   const { isLoading: infoLoading, data: infoData } = useQuery<Infodata>(['info', coinId], () =>
     fetchCoinInfo(coinId),
   );
@@ -54,7 +55,7 @@ function Coin() {
             </OverviewItem>
             <OverviewItem>
               <span>Price:</span>
-              <span>{tickersData?.quotes.USD.price}</span>
+              <span>{tickersData?.quotes.USD.price.toFixed(3)}</span>
             </OverviewItem>
           </Overview>
           <Description>{infoData?.description}</Description>
@@ -69,17 +70,18 @@ function Coin() {
             </OverviewItem>
           </Overview>
           <Tabs>
-            <Tab isActive={priceMath !== null}>
+            <Tab
+              onClick={() => {
+                handleTab('price');
+              }}
+              isActive={tab === 'price'}>
               <Link to='price'>Price</Link>
             </Tab>
-            <Tab isActive={chartMath !== null}>
+            <Tab onClick={() => handleTab('chart')} isActive={tab === 'chart'}>
               <Link to='chart'>Chart</Link>
             </Tab>
           </Tabs>
-          <Routes>
-            <Route path='price' element={<Price />} />
-            <Route path='chart' element={<Chart coinId={coinId} />} />
-          </Routes>
+          {tab === 'price' ? <Price /> : <Chart coinId={coinId} />}
         </>
       )}
     </Container>
@@ -200,6 +202,7 @@ const OverviewItem = styled.div`
 
 const Description = styled.p`
   margin: 20px 0px;
+  letter-spacing: 1px;
 `;
 
 const Tabs = styled.div`
