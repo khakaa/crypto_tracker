@@ -19,19 +19,16 @@ interface IHistorical {
 }
 
 function Chart({ coinId }: ChartPrpos) {
-  const { isLoading, data } = useQuery<IHistorical[]>(
+  const { isLoading, data } = useQuery<any | IHistorical[]>(
     ['ohlcv', coinId],
     () => fetchCoinHistory(coinId),
     // { refetchInterval: 5000 },
-    // {
-    //   onError: err => {
-    //     console.log(err);
-    //   },
-    // },
   );
-  // if (isError) {
-  //   return <div>error</div>;
-  // }
+
+  if (data?.error) {
+    return <div>{data.error}</div>;
+  }
+
   return (
     <div>
       {isLoading ? (
@@ -44,13 +41,13 @@ function Chart({ coinId }: ChartPrpos) {
             theme: { mode: 'dark' },
             stroke: { curve: 'smooth', width: 4 },
             grid: { show: false },
-            yaxis: { show: false },
+            // yaxis: { show: false },
             xaxis: {
               labels: { show: false },
               axisTicks: { show: false },
               axisBorder: { show: false },
               type: 'datetime',
-              categories: data?.map(price => {
+              categories: data?.map((price: IHistorical) => {
                 let date = new Date(price.time_close * 1000).toUTCString();
                 return date;
               }),
@@ -66,7 +63,12 @@ function Chart({ coinId }: ChartPrpos) {
               },
             },
           }}
-          series={[{ name: 'Price', data: data?.map(price => parseFloat(price.close)) ?? [] }]}
+          series={[
+            {
+              name: 'Price',
+              data: data?.map((price: IHistorical) => parseFloat(price.close)) ?? [],
+            },
+          ]}
         />
       )}
     </div>
