@@ -2,19 +2,19 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation, useParams, Link } from 'react-router-dom';
 import styled from 'styled-components';
-import Price from './Price';
 import Chart from './Chart';
 import { useQuery } from 'react-query';
 import { fetchCoinInfo, fetchCoinTickers } from '../api';
 
 function Coin() {
   const { coinId } = useParams() as unknown as RouteParams;
-  const [tab, setTab] = useState('price');
+  const [tab, setTab] = useState('chart');
   const { state } = useLocation();
 
   const handleTab = (tabName: string) => {
     setTab(tabName);
   };
+
   const { isLoading: infoLoading, data: infoData } = useQuery<Infodata>(['info', coinId], () =>
     fetchCoinInfo(coinId),
   );
@@ -70,18 +70,11 @@ function Coin() {
             </OverviewItem>
           </Overview>
           <Tabs>
-            <Tab
-              onClick={() => {
-                handleTab('price');
-              }}
-              isActive={tab === 'price'}>
-              <Link to='price'>Price</Link>
-            </Tab>
             <Tab onClick={() => handleTab('chart')} isActive={tab === 'chart'}>
-              <Link to='chart'>Chart</Link>
+              Chart
             </Tab>
           </Tabs>
-          {tab === 'price' ? <Price /> : <Chart coinId={coinId} />}
+          {tab === 'chart' && <Chart coinId={coinId} />}
         </>
       )}
     </Container>
@@ -210,6 +203,7 @@ const Tabs = styled.div`
   grid-template-columns: repeat(2, 1fr);
   margin: 25px 0px;
   gap: 10px;
+  cursor: pointer;
 `;
 
 const Tab = styled.span<{ isActive: boolean }>`
